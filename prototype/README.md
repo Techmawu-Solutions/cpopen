@@ -46,7 +46,8 @@ To deploy it on Vercel, create a project from the [cpopen repository](https://gi
 8. **Skills:** open "Why Verified?" on any skill to see the evidence behind it.
 9. Click **Online** in the header to simulate going offline. Keep learning; the banner counts the changes waiting to sync. Go back online and they sync.
 10. The feather icon turns on **data saver**: videos play as audio-only with slides.
-11. The translate button (**EN**) in the header switches the interface to French, Portuguese or Spanish straight away, including dates ("il y a 2 heures") and the course content itself: lessons, readings, transcripts and practice.
+11. Open **SQL for Data Analysis → SELECT: choosing columns**, or **Python for Beginners** lesson 1: under the lesson video, a **Recorded lecture** from YouTube plays inside Open.
+12. The translate button (**EN**) in the header switches the interface to French, Portuguese or Spanish straight away, including dates ("il y a 2 heures") and the course content itself: lessons, readings, transcripts and practice.
 
 **Ama:** see the guardian banner, then open `/courses/calculus-first-steps?ref=classproject&subject=EMATH&level=SHS2` for the referral welcome. The portfolio can't be made public. In the tutor, a worrying message is escalated to a person.
 
@@ -58,9 +59,10 @@ To deploy it on Vercel, create a project from the [cpopen repository](https://gi
 
 ## The partner API: real, and signed
 
-`GET /api/v1/partner/recommendations?subjects=EMATH,ICT&level=SHS2` implements spec section 25.3:
+`GET /api/v1/partner/recommendations?subjects=EMATH,ICT&level=SHS2&country=GH` implements spec section 25.3:
 - HMAC-SHA256 signature headers, and requests older than 5 minutes are rejected;
 - any learner identifier is refused (400);
+- `country` (ISO code, default `GH`) says which country's catalogue the subject codes come from; only Ghana is mapped, so another country returns an empty list;
 - only secondary-friendly, free courses are returned, each with a reason.
 
 **Demo credentials:**

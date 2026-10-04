@@ -92,7 +92,7 @@ erDiagram
 | Table | Role |
 |---|---|
 | `api_clients` | ClassProject's partner client: a public key and a hash of its signing secret. Its scope is `partner.recommendations` only |
-| `partner_subject_mappings` | ClassProject catalogue subject code (e.g. `EMATH`) and level band (e.g. `SHS1`–`SHS3`) mapped to Open skills, topics and Ghana SHS curriculum competencies |
+| `partner_subject_mappings` | ClassProject catalogue subject code (e.g. `EMATH`) **in one country** (`country_code`, e.g. `GH`; ClassProject keeps a catalogue per country) and level band (e.g. `SHS1`–`SHS3`), mapped to Open skills, topics and that country's curriculum competencies |
 | `courses.secondary_friendly`, `courses.min_age`, `courses.exam_alignment` | Decide which courses may be recommended to 13–17-year-olds |
 | `partner_referrals` | Anonymous arrivals from `?ref=classproject&subject=…&level=…`, linked to a user only if they sign up |
 

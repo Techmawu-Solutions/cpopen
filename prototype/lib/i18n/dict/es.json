@@ -1981,5 +1981,7 @@
 "How many times does print run? for i in range(4): print(i)":"¿Cuántas veces se ejecuta print?\nfor i in range(4):\n    print(i)",
 "def double(x): return x * 2 What is double(7)?":"def double(x):\n    return x * 2\n¿Cuánto vale double(7)?",
 "score = 45. What prints? if score >= 50: print(\"Pass\") else: print(\"Try again\")":"score = 45. ¿Qué se imprime?\nif score >= 50:\n    print(\"Aprobado\")\nelse:\n    print(\"Inténtalo de nuevo\")",
-"total = 0 for n in [2, 4, 6]: total = total + n What is total?":"total = 0\nfor n in [2, 4, 6]:\n    total = total + n\n¿Cuánto vale total?"
+"total = 0 for n in [2, 4, 6]: total = total + n What is total?":"total = 0\nfor n in [2, 4, 6]:\n    total = total + n\n¿Cuánto vale total?",
+"Recorded lecture":"Clase grabada",
+"Watch on YouTube":"Ver en YouTube"
 }

@@ -8,7 +8,7 @@ import { partnerRecommendations } from "@/lib/partner";
  *   X-Partner-Key:       client id
  *   X-Partner-Timestamp: unix seconds (rejected if older than 5 minutes)
  *   X-Partner-Signature: hex HMAC-SHA256(secret, METHOD + path + "?" + query + timestamp)
- * Only subject codes, a level and a language are accepted — never a learner id.
+ * Only subject codes, a level, a country and a language are accepted — never a learner id.
  *
  * Prototype credentials: key "classproject-demo", secret from
  * PARTNER_CLASSPROJECT_SECRET (default "demo-secret-change-me"). In development,
@@ -18,6 +18,9 @@ import { partnerRecommendations } from "@/lib/partner";
 const CLIENTS: Record<string, string> = {
   "classproject-demo": process.env.PARTNER_CLASSPROJECT_SECRET ?? "demo-secret-change-me",
 };
+
+/** Countries whose ClassProject catalogue codes Open has mapped to its courses. */
+const MAPPED_COUNTRIES = new Set(["GH"]);
 
 const FORBIDDEN = ["student", "student_id", "user", "user_id", "name", "email", "school"];
 
@@ -45,10 +48,14 @@ export function GET(req: NextRequest) {
   const subjects = (params.get("subjects") ?? "").split(",").map((s) => s.trim().toUpperCase()).filter(Boolean);
   if (!subjects.length) return NextResponse.json({ error: "subjects is required, e.g. subjects=EMATH,ICT" }, { status: 422 });
   const level = params.get("level")?.toUpperCase() ?? null;
+  // ClassProject keeps one catalogue per country, so subject codes only mean something with
+  // their country (spec section 25.3). Open's subject mappings exist for Ghana so far.
+  const country = (params.get("country") ?? "GH").toUpperCase();
+  if (!/^[A-Z]{2}$/.test(country)) return NextResponse.json({ error: "country must be an ISO 3166-1 alpha-2 code, e.g. GH" }, { status: 422 });
   const limit = Math.min(24, Math.max(1, Number(params.get("limit") ?? 12) || 12));
-  const items = partnerRecommendations({ subjects, level, limit, baseUrl: url.origin });
+  const items = MAPPED_COUNTRIES.has(country) ? partnerRecommendations({ subjects, level, limit, baseUrl: url.origin }) : [];
   return NextResponse.json(
-    { generated_at: new Date().toISOString(), items },
+    { generated_at: new Date().toISOString(), country, items },
     { headers: { "Cache-Control": "public, max-age=3600" } },
   );
 }

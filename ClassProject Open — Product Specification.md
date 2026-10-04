@@ -1113,7 +1113,8 @@ Tokens (colour, type, spacing, radius, motion) shared across web and native; com
   - chapters, captions and speed control;
   - transcript search and time-stamped notes;
   - an in-video question;
-  - audio-only data saver.
+  - audio-only data saver;
+  - a **recorded lecture** from YouTube played in-app under the lesson video where the lesson has one (SQL lesson 1 and Python lesson 1). The frame keeps the page's origin as referrer, since YouTube refuses embeds without it (error 153).
 - **Practice:** a hint ladder (nudge, strategy, worked step) before any answer is shown.
 - **The tutor:** it answers only from the course and cites the lesson. Otherwise it says "not in your course". It labels every answer, and escalates to a mentor or on safeguarding words.
 - **Review:** spaced and interleaved across skills.
@@ -1202,7 +1203,7 @@ Written as Given/When/Then; each epic gets the full set when it starts.
 | AC-CR-2 | **Given** an issued certificate, **when** anyone opens `/verify/{code}` without signing in, **then** they see recipient (as the learner allows), issuer, date, skills demonstrated, assessment completed and status. |
 | AC-PY-2 | **Given** a learner in Ghana, **when** they view a premium course, **then** the price is in GHS from the Ghana price book and mobile money is offered first. |
 | AC-TN-1 | **Given** two tenants, **when** any API is called with a tenant-A token for a tenant-B resource ID, **then** the response is 404 and the attempt is logged. (Automated for every endpoint.) |
-| AC-PT-1 | **Given** a valid ClassProject API client, **when** it requests recommendations for `subjects=EMATH,ICT&level=SHS2`, **then** it receives ≤ 12 published, free-or-preview courses suitable for 13–17-year-olds, each with a subject-specific reason, in ≤ 500 ms p95, and no learner identifier is required or accepted. |
+| AC-PT-1 | **Given** a valid ClassProject API client, **when** it requests recommendations for `subjects=EMATH,ICT&level=SHS2&country=GH`, **then** it receives ≤ 12 published, free-or-preview courses suitable for 13–17-year-olds, each with a subject-specific reason, in ≤ 500 ms p95, and no learner identifier is required or accepted. |
 | AC-PT-2 | **Given** a request with a bad or expired HMAC signature, **then** the API returns 401 and records the failure. |
 
 ---
@@ -1228,7 +1229,7 @@ sequenceDiagram
   participant O as Open Partner API
   S->>CP: open dashboard / Explore page
   CP->>CP: collect subject codes (enrolled + interests) and level — no identity
-  CP->>O: GET /v1/partner/recommendations?subjects=EMATH,ICT&level=SHS2&lang=en (HMAC-signed)
+  CP->>O: GET /v1/partner/recommendations?subjects=EMATH,ICT&level=SHS2&country=GH&lang=en (HMAC-signed)
   O-->>CP: courses + reason codes (cached 24 h per subject/level/lang)
   CP-->>S: recommendations with "why"
   S->>O: click → /courses/:slug?ref=classproject&subject=EMATH&level=SHS2
@@ -1241,7 +1242,8 @@ sequenceDiagram
 
 | Param | Example | Notes |
 |---|---|---|
-| `subjects` | `EMATH,ICT,ENG` | ClassProject **catalogue subject codes** (ClassProject spec section 17.1) — stable across schools |
+| `subjects` | `EMATH,ICT,ENG` | ClassProject **catalogue subject codes** (ClassProject spec section 17.1). Stable across schools of one country; ClassProject keeps one catalogue per country, so the same code can mean different subjects in two countries |
+| `country` | `GH` | ISO 3166-1 alpha-2 country of the student's school. Optional, default `GH`. The codes in `subjects` are read in this country's catalogue |
 | `level` | `SHS2` | `BASIC1`–`BASIC6`, `JHS1`–`JHS3`, `SHS1`–`SHS3` |
 | `lang` | `en` | UI language |
 | `limit` | `12` | ≤ 24 |
@@ -1275,7 +1277,7 @@ Headers: `X-Partner-Key: <client id>`, `X-Partner-Timestamp: <unix>`, `X-Partner
 
 ## 25.4 Matching rules (Open side)
 
-1. `partner_subject_mappings` maps (`classproject`, subject code, level band) → Open **skills/topics** (built on the Ghana SHS framework, section 15.2).
+1. `partner_subject_mappings` maps (`classproject`, country, subject code, level band) → Open **skills/topics** (built on the Ghana SHS framework, section 15.2). A country with no mappings yet gets an empty list rather than guesses; Ghana is mapped today.
 2. Candidate courses are those **published**, **suitable for 13–17** (`min_age ≤ 13` or flagged *secondary-friendly*), free or with free preview, in the requested language (fallback English).
 3. Rank by: skill overlap with the subject mapping → level fit → curriculum alignment (WASSCE/BECE prep flagged higher) → quality score (mastery rate) → freshness. Diversity: at most 2 courses per subject in the top 6.
 4. Each item returns one **reason code**: `subject_match`, `interest_match`, `exam_prep`, `next_level` (goes beyond the syllabus).
@@ -1342,3 +1344,5 @@ Headers: `X-Partner-Key: <client id>`, `X-Partner-Timestamp: <unix>`, `X-Partner
 | Sep 2026 | Interface language switch: English, French, Portuguese, Spanish at launch (Portuguese and Spanish brought forward from P6); authored content is not machine-translated by the interface | 7.5, 21, 21.1 |
 | Sep 2026 | The whole page follows the chosen language: course content (lessons, readings, transcripts, practice, careers, projects) is shown in the learner's language as a translated course version, not only the interface | 7.5, 21.1 |
 | Oct 2026 | Moved out of the ClassProject repository (`cp/mooc/`) into its own repository, **cpopen**: spec, database, prototype, the original brief and a copy of the translation-check script. Nothing about the product changed | 0 |
+| Oct 2026 | Partner API takes `country` (ISO code, default `GH`) because ClassProject now keeps one programme and subject catalogue per country; subject mappings are per country, and an unmapped country gets an empty list | 25.2, 25.3, 25.4, 23 (AC-PT-1) |
+| Oct 2026 | Lesson player plays recorded YouTube lectures in-app (`Activity.lecture`, privacy-enhanced domain, referrer kept so YouTube allows playback) | 21.1, 6.6 |

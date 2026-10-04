@@ -10,6 +10,7 @@ import { Markdown, StateBadge, StateLadder } from "@/components/open/bits";
 import { LinkButton } from "@/components/open/shell";
 import { MasteryCheck, PracticeSet } from "@/components/open/player/practice";
 import { SimVideo } from "@/components/open/player/sim-video";
+import { YouTubeLecturePlayer } from "@/components/open/player/youtube-lecture";
 import { Tutor } from "@/components/open/player/tutor";
 import { activitiesOf, courseBySlug, findActivity } from "@/lib/data/courses";
 import { skillName } from "@/lib/data/graph";
@@ -63,6 +64,7 @@ export default function LearnPage() {
         {!course.authored && <p className="rounded-lg bg-muted p-2 text-xs text-muted-foreground">Sample course: this prototype has the outline only. Try a flagship course for full lessons.</p>}
 
         {activity.kind === "video" && <SimVideo key={activity.id} activity={activity} record={signedIn} />}
+        {activity.kind === "video" && activity.lecture && <YouTubeLecturePlayer key={`${activity.id}-lecture`} lecture={activity.lecture} />}
         {activity.kind === "reading" && (
           <article className="rounded-2xl border bg-card p-5 sm:p-8">
             <Markdown source={activity.body ?? ""} />

@@ -1,4 +1,4 @@
-import type { Bloom } from "@/lib/types";
+import type { Bloom, YouTubeLecture } from "@/lib/types";
 
 /**
  * Fully authored lesson content for the five flagship courses. Each lesson
@@ -17,6 +17,8 @@ export interface LessonDef {
   items: string[];
   /** Item the video pauses on. */
   videoQuestion?: string;
+  /** A real recorded lecture on the same topic, played in-app under the lesson video. */
+  lecture?: YouTubeLecture;
 }
 
 export interface AuthoredCourse {
@@ -315,6 +317,7 @@ If a result surprises you, **recheck** cleaning, units and calculations. Surpris
         lessons: [
           {
             title: "SELECT: choosing columns",
+            lecture: { youtubeId: "HXV3zeQKqGY", title: "SQL Tutorial — Full Database Course for Beginners", channel: "freeCodeCamp.org" },
             skill: "sql-select",
             objective: { text: "Write SELECT queries that return the needed columns.", bloom: "apply" },
             concepts: ["Tables", "Columns", "DISTINCT"],
@@ -566,6 +569,7 @@ Negative lengths, negative times or impossible quantities are discarded.`,
         lessons: [
           {
             title: "Variables, text and lists",
+            lecture: { youtubeId: "rfscVS0vtbw", title: "Learn Python — Full Course for Beginners", channel: "freeCodeCamp.org" },
             skill: "py-variables",
             objective: { text: "Store and update numbers, text and lists in variables.", bloom: "apply" },
             concepts: ["Variables", "Types", "Lists"],

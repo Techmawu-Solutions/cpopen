@@ -103,7 +103,7 @@ function authoredLesson(slug: string, n: number, def: LessonDef): { lesson: Less
       title: def.title,
       concepts: def.concepts,
       activities: [
-        videoFrom(`${base}.video`, `Watch: ${def.title}`, def.slides, def.transcript, [def.skill], [oid], def.videoQuestion, def.examples),
+        { ...videoFrom(`${base}.video`, `Watch: ${def.title}`, def.slides, def.transcript, [def.skill], [oid], def.videoQuestion, def.examples), lecture: def.lecture },
         { id: `${base}.read`, kind: "reading", title: `Read: ${def.title}`, minutes: 4, objectives: [oid], skills: [def.skill], body: def.body, examples: def.examples },
         { id: `${base}.practice`, kind: "practice", title: `Practise: ${def.title}`, minutes: 6, objectives: [oid], skills: [def.skill], itemIds: def.items },
       ],

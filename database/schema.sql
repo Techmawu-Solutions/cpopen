@@ -2216,6 +2216,8 @@ CREATE TABLE api_clients (
 CREATE TABLE partner_subject_mappings (
   id            BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   partner_code  VARCHAR(40) NOT NULL,
+  -- ClassProject keeps one catalogue per country, so a code is only meaningful with its country.
+  country_code  CHAR(2)     NOT NULL DEFAULT 'GH',            -- ISO 3166-1 alpha-2
   subject_code  VARCHAR(20) NOT NULL,
   subject_name  VARCHAR(120) NOT NULL,
   level_from    VARCHAR(10) NOT NULL,                          -- BASIC1 … SHS3
@@ -2224,7 +2226,7 @@ CREATE TABLE partner_subject_mappings (
   topic_id      BIGINT UNSIGNED NULL,
   competency_id BIGINT UNSIGNED NULL,                          -- e.g. a GES/NaCCA strand
   weight        DECIMAL(4,3) NOT NULL DEFAULT 1.000,
-  KEY ix_partner_subject (partner_code, subject_code),
+  KEY ix_partner_subject (partner_code, country_code, subject_code),
   FOREIGN KEY (skill_id)      REFERENCES skills (id)       ON DELETE CASCADE,
   FOREIGN KEY (topic_id)      REFERENCES topics (id)       ON DELETE CASCADE,
   FOREIGN KEY (competency_id) REFERENCES competencies (id) ON DELETE CASCADE

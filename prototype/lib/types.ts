@@ -53,6 +53,14 @@ export interface TranscriptLine {
   text: string;
 }
 
+export interface YouTubeLecture {
+  youtubeId: string;
+  title: string;
+  channel: string;
+  /** Where to start, in seconds. */
+  start?: number;
+}
+
 export interface Activity {
   id: string;
   kind: ActivityKind;
@@ -67,6 +75,8 @@ export interface Activity {
   videoQuestion?: { at: number; itemId: string };
   /** Slides the simulated video shows, one per chapter. */
   slides?: { title: string; points: string[] }[];
+  /** A recorded lecture from YouTube, played inside Open below the lesson video (FR-VP-1). */
+  lecture?: YouTubeLecture;
   /** reading (light Markdown: ## headings, - bullets, **bold**, `code`) */
   body?: string;
   /** practice / mastery check */
