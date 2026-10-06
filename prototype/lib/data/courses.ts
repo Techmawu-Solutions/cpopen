@@ -88,8 +88,8 @@ function videoFrom(id: string, title: string, slides: { title: string; points: s
     chapters,
     slides,
     examples,
-    // Pause roughly two-thirds of the way through.
-    videoQuestion: videoQuestion ? { at: Math.floor(lines.length * 0.66) * SECONDS_PER_LINE, itemId: videoQuestion } : undefined,
+    // Pause roughly two-thirds of the way through; it has to be answered to skip past it.
+    videoQuestions: videoQuestion ? [{ at: Math.floor(lines.length * 0.66) * SECONDS_PER_LINE, itemId: videoQuestion, required: true }] : undefined,
   };
 }
 

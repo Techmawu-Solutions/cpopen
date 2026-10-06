@@ -53,12 +53,23 @@ export interface TranscriptLine {
   text: string;
 }
 
+/** A question placed at a moment in a video (FR-VP-4). Answers are evidence for the item's skill. */
+export interface VideoQuestion {
+  /** Seconds from the start. */
+  at: number;
+  itemId: string;
+  /** Must be answered before the learner can seek past it. */
+  required?: boolean;
+}
+
 export interface YouTubeLecture {
   youtubeId: string;
   title: string;
   channel: string;
   /** Where to start, in seconds. */
   start?: number;
+  /** Checkpoints on the lecture itself: the player pauses and asks, like the lesson video. */
+  questions?: VideoQuestion[];
 }
 
 export interface Activity {
@@ -71,8 +82,8 @@ export interface Activity {
   /** video */
   transcript?: TranscriptLine[];
   chapters?: { t: number; title: string }[];
-  /** A question the player pauses on (FR-VP-4). */
-  videoQuestion?: { at: number; itemId: string };
+  /** Questions the player pauses on (FR-VP-4), in any order. */
+  videoQuestions?: VideoQuestion[];
   /** Slides the simulated video shows, one per chapter. */
   slides?: { title: string; points: string[] }[];
   /** A recorded lecture from YouTube, played inside Open below the lesson video (FR-VP-1). */

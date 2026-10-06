@@ -709,15 +709,35 @@ CREATE TABLE activity_objectives (
   FOREIGN KEY (objective_id) REFERENCES objectives (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Questions shown inside a video at a timestamp (FR-VP-4).
+-- A recorded lecture from an outside provider shown with a video activity
+-- (FR-VP-1), e.g. a YouTube video. Played in-app; only the reference is stored.
+CREATE TABLE activity_lectures (
+  id           BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  activity_id  BIGINT UNSIGNED NOT NULL,
+  provider     ENUM('youtube','vimeo') NOT NULL,
+  provider_ref VARCHAR(64)  NOT NULL,                         -- the provider's video id
+  title        VARCHAR(255) NOT NULL,
+  channel      VARCHAR(190) NULL,
+  start_second INT UNSIGNED NOT NULL DEFAULT 0,
+  KEY ix_activity_lectures (activity_id),
+  FOREIGN KEY (activity_id) REFERENCES activities (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Questions shown inside a video at a timestamp (FR-VP-4): on the activity's
+-- own video, or on its recorded lecture when lecture_id is set. A forward seek
+-- stops at the first must_answer question not yet answered. Answers are
+-- item_responses and become video_question evidence.
 CREATE TABLE video_questions (
   id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   activity_id BIGINT UNSIGNED NOT NULL,
+  lecture_id  BIGINT UNSIGNED NULL,
   at_second   INT UNSIGNED NOT NULL,
+  position    SMALLINT UNSIGNED NOT NULL DEFAULT 0,          -- order among questions at the same second
   item_id     BIGINT UNSIGNED NOT NULL,
   must_answer BOOLEAN NOT NULL DEFAULT FALSE,
-  KEY ix_video_questions (activity_id, at_second),
-  FOREIGN KEY (activity_id) REFERENCES activities (id) ON DELETE CASCADE
+  KEY ix_video_questions (activity_id, lecture_id, at_second, position),
+  FOREIGN KEY (activity_id) REFERENCES activities (id)        ON DELETE CASCADE,
+  FOREIGN KEY (lecture_id)  REFERENCES activity_lectures (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Content review workflow (FR-MK-3) and quality scoring (FR-QA-1).

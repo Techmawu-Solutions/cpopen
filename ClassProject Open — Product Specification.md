@@ -17,7 +17,7 @@ This section exists so that anyone (a teammate, or a new AI chat) can pick up th
 | Area | State | Where |
 |---|---|---|
 | Product & architecture spec (the brief's 25 deliverables) | **Draft v1 written — awaiting validation** | this file |
-| Database schema | **Draft v1 — 145 tables, 293 foreign keys; loads cleanly on MariaDB 10.11** | `database/schema.sql` |
+| Database schema | **Draft v1 — 146 tables, 295 foreign keys; loads cleanly on MySQL 8.4 and MariaDB 10.11** | `database/schema.sql` |
 | ClassProject → Open recommendation link | **Prototype built in ClassProject** (mock Open catalogue, subject-based recommendations, student interests) | ClassProject spec section 49.2; cp repo `lib/mooc.ts` |
 | Clickable prototype (P0) | **Built**: Next.js on mock data, port 3001. 4 personas; onboarding with diagnostic; Today; path and planner; skill map; lesson player with tutor; spaced review; project with peer review; credentials with verification; portfolio; studio; the real signed partner API; interface in English, French, Portuguese and Spanish | `prototype/` (see section 21.1) |
 | Open production code (Laravel API, production web) | **Not started**, on purpose. The brief says: *"Do not start implementation until the architecture and product requirements have been validated."* The prototype is how we validate them. | none yet |
@@ -312,7 +312,7 @@ Requirement IDs (`FR-<area>-<n>`) are stable and referenced by the backlog (Sect
 | FR-VP-1 | Adaptive streaming (HLS) with 144p–1080p renditions and an **audio-only** mode; starts at the lowest bitrate on slow networks | P1 |
 | FR-VP-2 | Captions (auto-generated, human-reviewed), multi-language subtitles, full transcript with click-to-seek and search-in-video | P1 (captions + transcript) → P6 (translation) |
 | FR-VP-3 | Chapters, bookmarks, time-stamped private notes, playback speed, picture-in-picture, resume position across devices | P1 |
-| FR-VP-4 | **In-video questions** placed by instructors at timestamps; answers are evidence for the competency graph | P2 |
+| FR-VP-4 | **In-video questions** placed by instructors at timestamps; answers are evidence for the competency graph. Several per video, each **required** or optional; the video pauses at each, and a forward seek stops at the first required question not yet answered (going back is always free). The same applies to recorded lectures from YouTube. Same rules as ClassProject's interactive video (cp spec section 26.3) | P2 |
 | FR-VP-5 | Time-stamped public comments (moderated) | P4 |
 | FR-VP-6 | AI summary of each video (human-reviewed before learners see it) | P2 |
 | FR-VP-7 | Download for offline (Section 6.19) with data-size shown before download | P1 |
@@ -1112,9 +1112,10 @@ Tokens (colour, type, spacing, radius, motion) shared across web and native; com
   - slides with a timed transcript;
   - chapters, captions and speed control;
   - transcript search and time-stamped notes;
-  - an in-video question;
+  - in-video questions: markers on the seek bar, and a required question can't be skipped by seeking past it;
   - audio-only data saver;
   - a **recorded lecture** from YouTube played in-app under the lesson video where the lesson has one (SQL lesson 1 and Python lesson 1). The frame keeps the page's origin as referrer, since YouTube refuses embeds without it (error 153).
+  - **checkpoint questions on the recorded lecture**: the lecture runs through YouTube's player API with YouTube's own controls hidden, pauses at each checkpoint (5:00 required, then an optional one with **Skip**), and the answers count as in-video-question evidence for the skill.
 - **Practice:** a hint ladder (nudge, strategy, worked step) before any answer is shown.
 - **The tutor:** it answers only from the course and cites the lesson. Otherwise it says "not in your course". It labels every answer, and escalates to a mentor or on safeguarding words.
 - **Review:** spaced and interleaved across skills.
@@ -1346,3 +1347,4 @@ Headers: `X-Partner-Key: <client id>`, `X-Partner-Timestamp: <unix>`, `X-Partner
 | Oct 2026 | Moved out of the ClassProject repository (`cp/mooc/`) into its own repository, **cpopen**: spec, database, prototype, the original brief and a copy of the translation-check script. Nothing about the product changed | 0 |
 | Oct 2026 | Partner API takes `country` (ISO code, default `GH`) because ClassProject now keeps one programme and subject catalogue per country; subject mappings are per country, and an unmapped country gets an empty list | 25.2, 25.3, 25.4, 23 (AC-PT-1) |
 | Oct 2026 | Lesson player plays recorded YouTube lectures in-app (`Activity.lecture`, privacy-enhanced domain, referrer kept so YouTube allows playback) | 21.1, 6.6 |
+| Oct 2026 | In-video questions (FR-VP-4): several per video, required or optional, markers on the seek bar and no seeking past an unanswered required question; recorded YouTube lectures get checkpoint questions through the YouTube player API, recorded as `video_question` evidence. Schema: `activity_lectures`; `video_questions` can sit on a lecture and gains `position` | 6.6, 21.1 |

@@ -3,7 +3,7 @@
 [`schema.sql`](schema.sql) defines the **transactional database** of ClassProject Open, the global MOOC platform. It is a separate database from ClassProject's (`database/schema.sql` in the [cp repository](https://github.com/Techmawu-Solutions/cp)): the two platforms never share tables. They talk only through the signed partner API (spec section 25).
 
 - **Target:** MySQL 8.0+ in production.
-- **Check:** the file is verified by loading it into an empty MariaDB 10.11 database. It creates 145 tables and 293 foreign keys, plus 5 log tables partitioned by month.
+- **Check:** the file is verified by loading it into an empty MariaDB 10.11 database. It creates 146 tables and 295 foreign keys, plus 5 log tables partitioned by month.
 - **Load it:**
 
 ```bash
@@ -40,7 +40,7 @@ Then reload the file into an empty database to prove it runs, and drop that data
 | 1 | Platform & tenants | `countries`, `tenants`, `tenant_domains`, `tenant_settings`, `sso_connections` |
 | 2 | Identity & profile | `users`, `user_identities`, `webauthn_credentials`, `guardian_consents`, `permissions`, `roles`, `role_permissions`, `memberships`, `user_groups`, `user_group_members`, `consents`, `learner_profiles`, `learner_languages`, `learner_history`, `devices` |
 | 3 | Competency graph | `frameworks`, `skills`, `skill_prerequisites`, `competencies`, `competency_levels`, `competency_skills`, `careers`, `career_competencies`, `job_skills`, `job_skill_mappings`, `goals`, `goal_skills` |
-| 4 | Catalogue & authoring | `instructor_profiles`, `courses`, `course_instructors`, `course_versions`, `course_languages`, `course_prerequisite_skills`, `objectives`, `objective_skills`, `course_modules`, `lessons`, `concepts`, `media_assets`, `media_captions`, `media_chapters`, `activities`, `activity_objectives`, `video_questions`, `course_reviews`, `quality_flags`, `topics`, `course_topics` |
+| 4 | Catalogue & authoring | `instructor_profiles`, `courses`, `course_instructors`, `course_versions`, `course_languages`, `course_prerequisite_skills`, `objectives`, `objective_skills`, `course_modules`, `lessons`, `concepts`, `media_assets`, `media_captions`, `media_chapters`, `activities`, `activity_objectives`, `activity_lectures`, `video_questions`, `course_reviews`, `quality_flags`, `topics`, `course_topics` |
 | 5 | Programs & paths | `programs`, `paths`, `path_steps` |
 | 6 | Learning & progress | `enrollments`, `path_enrollments`, `activity_progress`, **`activity_events`** (partitioned), `sync_batches`, `notes`, `bookmarks`, `study_plans`, `study_sessions`, `review_items` |
 | 7 | Mastery | `skill_mastery`, **`evidence`** (partitioned), `diagnostics` |

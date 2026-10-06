@@ -46,7 +46,7 @@ To deploy it on Vercel, create a project from the [cpopen repository](https://gi
 8. **Skills:** open "Why Verified?" on any skill to see the evidence behind it.
 9. Click **Online** in the header to simulate going offline. Keep learning; the banner counts the changes waiting to sync. Go back online and they sync.
 10. The feather icon turns on **data saver**: videos play as audio-only with slides.
-11. Open **SQL for Data Analysis → SELECT: choosing columns**, or **Python for Beginners** lesson 1: under the lesson video, a **Recorded lecture** from YouTube plays inside Open.
+11. Open **SQL for Data Analysis → SELECT: choosing columns**, or **Python for Beginners** lesson 1: under the lesson video, a **Recorded lecture** from YouTube plays inside Open, with **checkpoint questions**. Drag its seek bar past 5:00 and it stops at the required checkpoint; the next one can be skipped. Answers count towards the skill on the skill map. The lesson video's own seek bar shows its question as a marker, and can't be dragged past it either.
 12. The translate button (**EN**) in the header switches the interface to French, Portuguese or Spanish straight away, including dates ("il y a 2 heures") and the course content itself: lessons, readings, transcripts and practice.
 
 **Ama:** see the guardian banner, then open `/courses/calculus-first-steps?ref=classproject&subject=EMATH&level=SHS2` for the referral welcome. The portfolio can't be made public. In the tutor, a worrying message is escalated to a person.

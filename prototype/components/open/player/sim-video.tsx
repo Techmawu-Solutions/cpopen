@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { ItemQuestion } from "@/components/open/player/practice";
 import { itemById } from "@/lib/data/items";
 import { addNote, completeActivity, recordAnswer, saveResume } from "@/lib/learning";
+import { byTime, dueQuestion, seekBlocker } from "@/lib/video-questions";
 import { useOpen } from "@/lib/store";
 import type { Activity } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -32,8 +33,10 @@ export function SimVideo({ activity, record }: { activity: Activity; record: boo
   const [speed, setSpeed] = useState(1);
   const [captions, setCaptions] = useState(true);
   const [query, setQuery] = useState("");
-  const [asking, setAsking] = useState(false);
-  const [answered, setAnswered] = useState(false);
+  const [asking, setAsking] = useState<string | null>(null);
+  const [answered, setAnswered] = useState<Set<string>>(() => new Set());
+  // The component is keyed by activity, so the list is fixed for its lifetime (and stable for the timer below).
+  const [questions] = useState(() => byTime(activity.videoQuestions));
   const maxT = useRef(t);
   const doneRef = useRef(!!saved?.done);
 
@@ -43,10 +46,10 @@ export function SimVideo({ activity, record }: { activity: Activity; record: boo
       setT((cur) => {
         const nt = Math.min(duration, cur + 0.25 * speed);
         maxT.current = Math.max(maxT.current, nt);
-        const q = activity.videoQuestion;
-        if (q && !answered && cur < q.at && nt >= q.at) {
+        const q = dueQuestion(questions, cur, nt, answered);
+        if (q) {
           setPlaying(false);
-          setAsking(true);
+          setAsking(q.itemId);
           return q.at;
         }
         if (nt >= duration) setPlaying(false);
@@ -54,7 +57,20 @@ export function SimVideo({ activity, record }: { activity: Activity; record: boo
       });
     }, 250);
     return () => clearInterval(id);
-  }, [playing, speed, duration, activity.videoQuestion, answered]);
+  }, [playing, speed, duration, questions, answered]);
+
+  /** Seeking: going back is free; going forward stops at a required question not yet answered. */
+  const seek = (to: number) => {
+    const blocker = to > t ? seekBlocker(questions, to, answered) : null;
+    if (blocker) {
+      setT(blocker.at);
+      setPlaying(false);
+      setAsking(blocker.itemId);
+      toast.info("Answer this question to move on");
+      return;
+    }
+    setT(to);
+  };
 
   // Resume position and completion (≥ 80% watched → Exposed).
   useEffect(() => {
@@ -73,7 +89,7 @@ export function SimVideo({ activity, record }: { activity: Activity; record: boo
   const chapters = activity.chapters ?? [];
   const chapterIdx = Math.max(0, chapters.findLastIndex((c) => t >= c.t));
   const slide = activity.slides?.[Math.min(chapterIdx, (activity.slides?.length ?? 1) - 1)];
-  const q = activity.videoQuestion ? itemById.get(activity.videoQuestion.itemId) : undefined;
+  const q = asking ? itemById.get(asking) : undefined;
   const matches = query.trim() ? lines.filter((l) => l.text.toLowerCase().includes(query.trim().toLowerCase())) : [];
 
   return (
@@ -110,32 +126,38 @@ export function SimVideo({ activity, record }: { activity: Activity; record: boo
         )}
         {asking && q && (
           <div className="absolute inset-0 overflow-y-auto bg-background p-4 text-foreground">
-            <p className="mb-2 text-xs font-medium text-primary uppercase">Quick question — the video continues after</p>
+            <p className="mb-2 text-xs font-medium text-primary uppercase">
+              Quick question {questions.findIndex((x) => x.itemId === q.id) + 1} of {questions.length} — the video continues after
+            </p>
             <ItemQuestion
+              key={q.id}
               item={q}
               allowHints={false}
               onDone={(correct) => {
                 if (record) recordAnswer(q, correct, "video_question");
-                setAnswered(true);
+                setAnswered((a) => new Set(a).add(q.id));
               }}
               doneLabel="Continue the video"
-              onContinue={() => (setAsking(false), setPlaying(true))}
+              onContinue={() => (setAsking(null), setPlaying(true))}
             />
           </div>
         )}
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <Button size="icon-sm" variant="outline" aria-label={playing ? "Pause" : "Play"} onClick={() => setPlaying((p) => !p)} disabled={asking}>
+        <Button size="icon-sm" variant="outline" aria-label={playing ? "Pause" : "Play"} onClick={() => setPlaying((p) => !p)} disabled={!!asking}>
           {playing ? <Pause /> : <Play />}
         </Button>
         <span className="w-24 text-xs text-muted-foreground tabular-nums">
           {fmt(t)} / {fmt(duration)}
         </span>
         <div className="relative min-w-40 flex-1">
-          <input type="range" min={0} max={duration} step={0.5} value={t} onChange={(e) => setT(Number(e.target.value))} className="w-full accent-primary" aria-label="Seek" />
+          <input type="range" min={0} max={duration} step={0.5} value={t} onChange={(e) => seek(Number(e.target.value))} disabled={!!asking} className="w-full accent-primary" aria-label="Seek" />
           {chapters.map((c) => (
             <span key={c.t} className="pointer-events-none absolute top-0 h-1.5 w-0.5 bg-foreground/40" style={{ left: `${(c.t / duration) * 100}%` }} />
+          ))}
+          {questions.map((x) => (
+            <span key={x.itemId} title={answered.has(x.itemId) ? "Question answered" : "Question"} className={cn("pointer-events-none absolute -top-1 size-2.5 -translate-x-1/2 rounded-full ring-2 ring-background", answered.has(x.itemId) ? "bg-emerald-500" : "bg-primary")} style={{ left: `${(x.at / duration) * 100}%` }} />
           ))}
         </div>
         <select value={speed} onChange={(e) => setSpeed(Number(e.target.value))} className="h-7 rounded-md border bg-card px-1.5 text-xs" aria-label="Playback speed">
@@ -167,7 +189,7 @@ export function SimVideo({ activity, record }: { activity: Activity; record: boo
       {chapters.length > 1 && (
         <div className="flex flex-wrap gap-1.5" aria-label="Chapters">
           {chapters.map((c, i) => (
-            <button key={c.t} type="button" onClick={() => setT(c.t)} className={cn("rounded-full border px-2.5 py-0.5 text-xs", i === chapterIdx ? "border-primary bg-accent" : "bg-card")}>
+            <button key={c.t} type="button" onClick={() => seek(c.t)} className={cn("rounded-full border px-2.5 py-0.5 text-xs", i === chapterIdx ? "border-primary bg-accent" : "bg-card")}>
               {fmt(c.t)} {c.title}
             </button>
           ))}
@@ -184,7 +206,7 @@ export function SimVideo({ activity, record }: { activity: Activity; record: boo
         <ol className="mt-2 max-h-56 space-y-1 overflow-y-auto text-sm">
           {(query.trim() ? matches : lines).map((l) => (
             <li key={l.t}>
-              <button type="button" onClick={() => setT(l.t)} className={cn("flex w-full gap-2 rounded px-1.5 py-1 text-left hover:bg-muted", lines[lineIdx] === l && "bg-accent")}>
+              <button type="button" onClick={() => seek(l.t)} className={cn("flex w-full gap-2 rounded px-1.5 py-1 text-left hover:bg-muted", lines[lineIdx] === l && "bg-accent")}>
                 <span className="w-10 shrink-0 text-xs text-muted-foreground tabular-nums">{fmt(l.t)}</span>
                 <span>{l.text}</span>
               </button>

@@ -9,7 +9,7 @@ It is a **separate platform** from ClassProject, the school LMS in the [cp repos
 | File | What it is |
 |---|---|
 | [`ClassProject Open — Product Specification.md`](ClassProject%20Open%20—%20Product%20Specification.md) | **The source of truth.** The product requirements and architecture: all 25 deliverables the brief asks for, a decision log, the MVP, the roadmap, the backlog, acceptance criteria and the ClassProject integration. **Read section 0 first.** |
-| [`database/schema.sql`](database/schema.sql) | Open's own MySQL 8 schema (145 tables), verified by loading it |
+| [`database/schema.sql`](database/schema.sql) | Open's own MySQL 8 schema (146 tables), verified by loading it |
 | [`database/README.md`](database/README.md) | How the schema is organised, its conventions, the ClassProject link tables, and what lives outside MySQL |
 | [`prototype/`](prototype/README.md) | **The clickable prototype.** Run `npm install && npm run dev` there, then open http://localhost:3001. Its README has the demo accounts, a 10-minute demo script, and a map from screens to requirements |
 | [`Master Prompt — Next-Generation Global MOOC Platform.md`](Master%20Prompt%20—%20Next-Generation%20Global%20MOOC%20Platform.md) | The original brief this work answers (kept unchanged apart from a pointer at the top) |

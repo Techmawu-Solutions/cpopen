@@ -317,7 +317,7 @@ If a result surprises you, **recheck** cleaning, units and calculations. Surpris
         lessons: [
           {
             title: "SELECT: choosing columns",
-            lecture: { youtubeId: "HXV3zeQKqGY", title: "SQL Tutorial — Full Database Course for Beginners", channel: "freeCodeCamp.org" },
+            lecture: { youtubeId: "HXV3zeQKqGY", title: "SQL Tutorial — Full Database Course for Beginners", channel: "freeCodeCamp.org", questions: [{ at: 300, itemId: "sq1", required: true }, { at: 720, itemId: "sq2" }] },
             skill: "sql-select",
             objective: { text: "Write SELECT queries that return the needed columns.", bloom: "apply" },
             concepts: ["Tables", "Columns", "DISTINCT"],
@@ -569,7 +569,7 @@ Negative lengths, negative times or impossible quantities are discarded.`,
         lessons: [
           {
             title: "Variables, text and lists",
-            lecture: { youtubeId: "rfscVS0vtbw", title: "Learn Python — Full Course for Beginners", channel: "freeCodeCamp.org" },
+            lecture: { youtubeId: "rfscVS0vtbw", title: "Learn Python — Full Course for Beginners", channel: "freeCodeCamp.org", questions: [{ at: 300, itemId: "py1", required: true }, { at: 900, itemId: "py2" }] },
             skill: "py-variables",
             objective: { text: "Store and update numbers, text and lists in variables.", bloom: "apply" },
             concepts: ["Variables", "Types", "Lists"],

@@ -64,7 +64,7 @@ export default function LearnPage() {
         {!course.authored && <p className="rounded-lg bg-muted p-2 text-xs text-muted-foreground">Sample course: this prototype has the outline only. Try a flagship course for full lessons.</p>}
 
         {activity.kind === "video" && <SimVideo key={activity.id} activity={activity} record={signedIn} />}
-        {activity.kind === "video" && activity.lecture && <YouTubeLecturePlayer key={`${activity.id}-lecture`} lecture={activity.lecture} />}
+        {activity.kind === "video" && activity.lecture && <YouTubeLecturePlayer key={`${activity.id}-lecture`} lecture={activity.lecture} record={signedIn} />}
         {activity.kind === "reading" && (
           <article className="rounded-2xl border bg-card p-5 sm:p-8">
             <Markdown source={activity.body ?? ""} />

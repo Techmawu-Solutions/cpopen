@@ -1983,5 +1983,16 @@
 "score = 45. What prints? if score >= 50: print(\"Pass\") else: print(\"Try again\")":"score = 45. Qu'est-ce qui s'affiche ?\nif score >= 50:\n    print(\"Admis\")\nelse:\n    print(\"Réessayez\")",
 "total = 0 for n in [2, 4, 6]: total = total + n What is total?":"total = 0\nfor n in [2, 4, 6]:\n    total = total + n\nQue vaut total ?",
 "Recorded lecture":"Cours enregistré",
-"Watch on YouTube":"Regarder sur YouTube"
+"Watch on YouTube":"Regarder sur YouTube",
+"— the video continues after":"— la vidéo reprend ensuite",
+"· required":"· obligatoire",
+"1 checkpoint question":"1 question de contrôle",
+"Answer this question to move on":"Réponds à cette question pour avancer",
+"Checkpoint":"Contrôle",
+"Question answered":"Question répondue",
+"Quick question":"Question rapide",
+"Skip this question":"Passer cette question",
+"This lecture can't be played here. Open it on YouTube instead.":"Ce cours ne peut pas être lu ici. Ouvre-le plutôt sur YouTube.",
+"{0} checkpoint questions":"{0} questions de contrôle",
+"Continue the lecture":"Continuer le cours"
 }
