@@ -312,7 +312,7 @@ Requirement IDs (`FR-<area>-<n>`) are stable and referenced by the backlog (Sect
 | FR-VP-1 | Adaptive streaming (HLS) with 144p–1080p renditions and an **audio-only** mode; starts at the lowest bitrate on slow networks | P1 |
 | FR-VP-2 | Captions (auto-generated, human-reviewed), multi-language subtitles, full transcript with click-to-seek and search-in-video | P1 (captions + transcript) → P6 (translation) |
 | FR-VP-3 | Chapters, bookmarks, time-stamped private notes, playback speed, picture-in-picture, resume position across devices | P1 |
-| FR-VP-4 | **In-video questions** placed by instructors at timestamps; answers are evidence for the competency graph. Several per video, each **required** or optional; the video pauses at each, and a forward seek stops at the first required question not yet answered (going back is always free). The same applies to recorded lectures from YouTube. Same rules as ClassProject's interactive video (cp spec section 26.3) | P2 |
+| FR-VP-4 | **In-video questions** placed by instructors at timestamps; answers are evidence for the competency graph. Several per video, each **required** or optional; the video pauses at each, and a forward seek stops at the first required question not yet answered (going back is always free). The same applies to recorded lectures from YouTube. Same rules as ClassProject's interactive video (cp spec section 26.3). Instructors place, change and remove them in the **Studio** (section 6.22): a draft per video, previewed in the lesson, then published; learners only get the published version | P2 |
 | FR-VP-5 | Time-stamped public comments (moderated) | P4 |
 | FR-VP-6 | AI summary of each video (human-reviewed before learners see it) | P2 |
 | FR-VP-7 | Download for offline (Section 6.19) with data-size shown before download | P1 |
@@ -469,6 +469,7 @@ Requirement IDs (`FR-<area>-<n>`) are stable and referenced by the backlog (Sect
 | FR-ST-2 | Generates: course structure, lesson plans, objectives, quizzes, assignments, case studies, discussion questions, flashcards, practice exercises, rubrics, revision materials, accessibility metadata (alt text, transcripts) | P2 |
 | FR-ST-3 | **Every generated artefact is a draft** that a human must review and approve; provenance ("AI-drafted, approved by X on date") stored | P2 |
 | FR-ST-4 | Objective → skill mapping suggestions against the tenant's competency framework | P2 |
+| FR-ST-5 | **In-video question editor:** place items from the course's item bank at moments in a lesson video or its recorded lecture, each required or optional; problems (a time past the end, a question used twice) block publishing; a draft is previewed in the lesson and learners only get the published version (FR-VP-4) | P2 (built in the P0 prototype) |
 
 ## 6.23 Marketplace, publishing and revenue (brief section 22)
 
@@ -1124,7 +1125,13 @@ Tokens (colour, type, spacing, radius, motion) shared across web and native; com
 - **Credentials:** issued automatically once their criteria are met. The public verification page includes the Open Badges 3.0-shaped JSON.
 - **The portfolio:** public or private, and never public for under-18s.
 - **Settings:** privacy and AI switches, data export and account deletion.
-- **The instructor studio:** the coverage gate, AI drafts that need approval, and quality flags.
+- **The instructor studio:** the coverage gate, AI drafts that need approval, quality flags, and **in-video questions**:
+  - pick a video (the lesson video or its recorded lecture);
+  - add questions from the course's item bank at a time;
+  - mark each required or optional, change its time, or remove it;
+  - problems are shown (a time after the end of the video, the same question twice);
+  - **Save draft**, **Preview draft in the lesson**, then **Publish**. Learners get the published version; the draft preview records nothing;
+  - published questions belong to the course, so they stay when switching persona.
 - **Offline and data saver:** simulated.
 - **The partner API:** `GET /api/v1/partner/recommendations` really runs, with the HMAC signature check, the refusal of learner identifiers, and the section 25.4 rules.
 
@@ -1348,3 +1355,4 @@ Headers: `X-Partner-Key: <client id>`, `X-Partner-Timestamp: <unix>`, `X-Partner
 | Oct 2026 | Partner API takes `country` (ISO code, default `GH`) because ClassProject now keeps one programme and subject catalogue per country; subject mappings are per country, and an unmapped country gets an empty list | 25.2, 25.3, 25.4, 23 (AC-PT-1) |
 | Oct 2026 | Lesson player plays recorded YouTube lectures in-app (`Activity.lecture`, privacy-enhanced domain, referrer kept so YouTube allows playback) | 21.1, 6.6 |
 | Oct 2026 | In-video questions (FR-VP-4): several per video, required or optional, markers on the seek bar and no seeking past an unanswered required question; recorded YouTube lectures get checkpoint questions through the YouTube player API, recorded as `video_question` evidence. Schema: `activity_lectures`; `video_questions` can sit on a lecture and gains `position` | 6.6, 21.1 |
+| Oct 2026 | Studio: in-video question editor, FR-ST-5 (place items from the item bank at moments in a lesson video or recorded lecture, required/optional, draft, preview, publish). Schema: none, since drafts and published questions are `video_questions` rows on a draft or published `course_versions` row | 6.6, 6.22, 21.1 |

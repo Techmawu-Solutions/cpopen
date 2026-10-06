@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { ArrowLeft, ArrowRight, BookOpen, Check, ClipboardCheck, FolderKanban, PenLine, PlayCircle, Target } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import { Tutor } from "@/components/open/player/tutor";
 import { activitiesOf, courseBySlug, findActivity } from "@/lib/data/courses";
 import { skillName } from "@/lib/data/graph";
 import { completeActivity } from "@/lib/learning";
+import { effectiveQuestions } from "@/lib/studio-video";
 import { STATE_MEANING } from "@/lib/mastery";
 import { useOpen } from "@/lib/store";
 import type { ActivityKind } from "@/lib/types";
@@ -30,6 +31,8 @@ export default function LearnPage() {
   const found = course ? findActivity(course, decodeURIComponent(activityId)) : null;
   const s = useOpen();
   const signedIn = !!s.profile;
+  // An instructor previewing their Studio draft (?questions=draft); learners always get the published questions.
+  const draft = useSearchParams().get("questions") === "draft" && s.profile?.role === "instructor";
 
   if (!course || !found)
     return (
@@ -63,8 +66,9 @@ export default function LearnPage() {
         )}
         {!course.authored && <p className="rounded-lg bg-muted p-2 text-xs text-muted-foreground">Sample course: this prototype has the outline only. Try a flagship course for full lessons.</p>}
 
-        {activity.kind === "video" && <SimVideo key={activity.id} activity={activity} record={signedIn} />}
-        {activity.kind === "video" && activity.lecture && <YouTubeLecturePlayer key={`${activity.id}-lecture`} lecture={activity.lecture} record={signedIn} />}
+        {draft && activity.kind === "video" && <p className="rounded-lg border border-amber-500/40 bg-amber-50 p-2 text-sm text-amber-900 dark:bg-amber-950/30 dark:text-amber-100">Previewing your draft questions. Learners see the published ones; answers here aren&apos;t recorded.</p>}
+        {activity.kind === "video" && <SimVideo key={`${activity.id}-${draft}`} activity={{ ...activity, videoQuestions: effectiveQuestions(s, activity, "video", draft) }} record={signedIn && !draft} />}
+        {activity.kind === "video" && activity.lecture && <YouTubeLecturePlayer key={`${activity.id}-lecture-${draft}`} lecture={{ ...activity.lecture, questions: effectiveQuestions(s, activity, "lecture", draft) }} record={signedIn && !draft} />}
         {activity.kind === "reading" && (
           <article className="rounded-2xl border bg-card p-5 sm:p-8">
             <Markdown source={activity.body ?? ""} />

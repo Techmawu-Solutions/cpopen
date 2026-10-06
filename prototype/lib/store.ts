@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { Goal, IssuedCredential, Mastery, PathStep, ProjectSubmission, TutorMessage } from "@/lib/types";
+import type { Goal, IssuedCredential, Mastery, PathStep, ProjectSubmission, TutorMessage, VideoQuestion } from "@/lib/types";
 
 /**
  * The prototype's "backend": one learner's state, persisted in this browser
@@ -79,6 +79,19 @@ export interface QualityFlag {
   status: "open" | "fixed" | "dismissed";
 }
 
+/**
+ * An instructor's in-video questions for one video (FR-VP-4), edited in the
+ * Studio: a draft, and the version learners see once published. Keyed by
+ * activity id, plus "#lecture" for the activity's recorded lecture.
+ */
+export interface VideoQuestionEdit {
+  draft: VideoQuestion[];
+  published?: VideoQuestion[];
+  publishedAt?: string;
+  publishedBy?: string;
+  updatedAt: string;
+}
+
 export interface OpenState {
   version: number;
   persona: PersonaId | null;
@@ -106,9 +119,11 @@ export interface OpenState {
   pendingSync: number;
   drafts: Draft[];
   flags: QualityFlag[];
+  /** In-video questions edited in the Studio; course data supplies the rest. */
+  videoQuestions: Record<string, VideoQuestionEdit>;
 }
 
-export const STATE_VERSION = 3;
+export const STATE_VERSION = 4;
 
 export const EMPTY: OpenState = {
   version: STATE_VERSION,
@@ -136,6 +151,7 @@ export const EMPTY: OpenState = {
   pendingSync: 0,
   drafts: [],
   flags: [],
+  videoQuestions: {},
 };
 
 export const useOpen = create<OpenState>()(

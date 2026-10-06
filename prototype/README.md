@@ -26,7 +26,7 @@ To deploy it on Vercel, create a project from the [cpopen repository](https://gi
 | **Kwesi Mensah, 24**: career switcher | Five weeks into a Data Analyst path, with spreadsheet skills verified, SQL in progress, a capstone project started, 5 reviews due and one certificate |
 | **Ama Boateng, 16**: from ClassProject | Under-18 rules (guardian consent pending, private account, safety mode for the tutor), data saver on, and a course reached through a ClassProject referral |
 | **New learner** | The full first run: goal prompt → about you (including the under-18 consent step) → diagnostic → personal path |
-| **Dr. Kwame Mensah**: instructor | Instructor studio: the coverage gate, AI drafts awaiting approval, and quality flags |
+| **Dr. Kwame Mensah**: instructor | Instructor studio: the coverage gate, AI drafts awaiting approval, in-video questions, and quality flags |
 
 ## A 10-minute demo script
 
@@ -53,7 +53,7 @@ To deploy it on Vercel, create a project from the [cpopen repository](https://gi
 
 **New learner:** type *"I want to become a data analyst in 6 months"*. The six months becomes the plan's deadline. Give a birth year that makes you 15 or 16, answer the quick check, and see what gets skipped.
 
-**Dr. Mensah:** in the studio, switch courses in the coverage check, approve or edit an AI draft, and fix a quality flag.
+**Dr. Mensah:** in the studio, switch courses in the coverage check, approve or edit an AI draft, and fix a quality flag. Under **In-video questions**, choose **SQL for Data Analysis**, add a question at 0:20 to the lesson video, then use **Preview draft in the lesson** and **Publish**. Sign in as Kwesi and open that lesson: the video stops at 0:20.
 
 **Signed out:** `/`, `/explore` (all 7 modes, including *"two weeks to learn Python for data analysis"* in Search), `/careers/data-analyst`, `/partners/classproject`, and `/verify/SAMP-LE26-OPEN`.
 
@@ -111,4 +111,4 @@ lib/i18n         interface language: fr/pt/es dictionaries and the runtime trans
 | `/portfolio`, `/p/…` | FR-PF-1..5 (visibility, never public for under-18s) |
 | `/courses/…`, course cards | FR-TR-3 (generated covers; `/thumbnails/<slug>.svg`), FR-TR-1/2 (transparency block), FR-VP-7 (download size), section 25 (referral) |
 | `/settings` | FR-LC-1..3 (control, export, delete) |
-| `/studio` | FR-CA-3 (coverage gate), FR-ST-3 (AI drafts need approval), FR-QA-3 (flags, never silent edits) |
+| `/studio` | FR-CA-3 (coverage gate), FR-ST-3 (AI drafts need approval), FR-VP-4 (in-video question editor: draft, preview, publish), FR-QA-3 (flags, never silent edits) |

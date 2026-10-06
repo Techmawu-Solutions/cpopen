@@ -146,14 +146,18 @@ function mensah(): OpenState {
   };
 }
 
-/** Signs in as a demo persona, replacing this browser's state. */
+/**
+ * Signs in as a demo persona, replacing this browser's state. In-video
+ * questions published in the Studio belong to the course, not to one person,
+ * so they survive the switch: publish as Dr. Mensah, then see them as Kwesi.
+ */
 export function signInAs(id: PersonaId) {
   const state = id === "kwesi" ? kwesi() : id === "ama" ? ama() : id === "mensah" ? mensah() : { ...EMPTY, persona: "new" as const };
-  useOpen.setState(state, true);
+  useOpen.setState({ ...state, videoQuestions: useOpen.getState().videoQuestions ?? {} }, true);
 }
 
 export function signOut() {
-  useOpen.setState(EMPTY, true);
+  useOpen.setState({ ...EMPTY, videoQuestions: useOpen.getState().videoQuestions ?? {} }, true);
 }
 
 export const itemsCount = ITEMS.length;

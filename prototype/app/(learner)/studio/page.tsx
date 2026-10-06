@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { PageTitle } from "@/components/open/bits";
+import { VideoQuestionsEditor } from "@/components/open/studio/video-questions-editor";
 import { COURSES, activitiesOf, courseBySlug } from "@/lib/data/courses";
 import { ITEMS } from "@/lib/data/items";
 import { setOpen, uid, useOpen } from "@/lib/store";
@@ -14,7 +15,8 @@ import { cn } from "@/lib/utils";
 /**
  * Instructor studio (spec section 6.17, section 6.22): the publish-blocking coverage check
  * (activity → objective → skill → assessment), AI drafts that need human
- * approval, and quality flags raised by psychometrics, AI and learners.
+ * approval, in-video questions (FR-VP-4), and quality flags raised by
+ * psychometrics, AI and learners.
  */
 export default function StudioPage() {
   const s = useOpen();
@@ -144,6 +146,8 @@ export default function StudioPage() {
             </article>
           ))}
         </section>
+
+        <VideoQuestionsEditor key={slug} course={course} />
 
         <section className="rounded-2xl border bg-card p-5 lg:col-span-2">
           <h2 className="text-lg font-semibold">Quality flags</h2>
