@@ -10,8 +10,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem,
 import { Logo } from "@/components/open/bits";
 import { LanguageSwitcher } from "@/components/open/language-switcher";
 import { dueReview, setOfflineMode } from "@/lib/learning";
-import { signOut } from "@/lib/personas";
-import { setOpen, useHydrated, useOpen } from "@/lib/store";
+import { HOME_FOR, signOut } from "@/lib/personas";
+import { setOpen, useHydrated, useOpen, type Role } from "@/lib/store";
+import { instructorSlug } from "@/lib/studio";
 import { cn } from "@/lib/utils";
 
 const LEARNER_NAV = [
@@ -22,10 +23,31 @@ const LEARNER_NAV = [
   { href: "/review", label: "Review" },
   { href: "/portfolio", label: "Portfolio" },
 ];
-const INSTRUCTOR_NAV = [
-  { href: "/studio", label: "Studio" },
-  { href: "/explore", label: "Explore" },
-];
+/** Each staff role's portal (spec section 5.3). */
+const STAFF_NAV: Record<Exclude<Role, "learner">, { href: string; label: string }[]> = {
+  instructor: [
+    { href: "/studio", label: "Studio" },
+    { href: "/studio/upload", label: "Add content" },
+    { href: "/explore", label: "Explore" },
+  ],
+  reviewer: [
+    { href: "/reviewer", label: "Review queue" },
+    { href: "/explore", label: "Explore" },
+  ],
+  mentor: [
+    { href: "/mentor", label: "Mentoring" },
+    { href: "/explore", label: "Explore" },
+  ],
+  org_admin: [
+    { href: "/org", label: "Academy" },
+    { href: "/explore", label: "Explore" },
+  ],
+  super_admin: [
+    { href: "/admin", label: "Administration" },
+    { href: "/reviewer", label: "Review queue" },
+    { href: "/explore", label: "Explore" },
+  ],
+};
 
 export function LinkButton({ href, children, variant, size, className, target }: { href: string; children: React.ReactNode; variant?: "default" | "outline" | "secondary" | "ghost" | "link"; size?: "default" | "sm" | "lg" | "xs"; className?: string; target?: string }) {
   return (
@@ -34,6 +56,9 @@ export function LinkButton({ href, children, variant, size, className, target }:
     </Link>
   );
 }
+
+/** "Dr. Kwame Mensah" → "Kwame": titles aren't names. */
+const firstName = (name: string) => name.replace(/^(Dr|Mr|Mrs|Ms|Prof)\.\s+/, "").split(" ")[0]!;
 
 export function AppShell({ children, requireAuth }: { children: React.ReactNode; requireAuth: boolean }) {
   const hydrated = useHydrated();
@@ -49,20 +74,23 @@ export function AppShell({ children, requireAuth }: { children: React.ReactNode;
 
   if (!hydrated || mustSignIn) return <div className="grid min-h-dvh place-items-center text-sm text-muted-foreground">Loading…</div>;
 
-  const nav = s.profile?.role === "instructor" ? INSTRUCTOR_NAV : LEARNER_NAV;
+  const role = s.profile?.role ?? "learner";
+  const nav = role === "learner" ? LEARNER_NAV : STAFF_NAV[role];
   const due = signedIn ? dueReview(s).length : 0;
+  // The longest matching link is the current one, so "Add content" doesn't also light up "Studio".
+  const current = nav.filter((n) => pathname === n.href || pathname.startsWith(`${n.href}/`)).sort((a, b) => b.href.length - a.href.length)[0]?.href;
 
   return (
     <div className="flex min-h-dvh flex-col">
       <header className="sticky top-0 z-30 border-b bg-background/90 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4">
-          <Link href={signedIn ? (s.profile?.role === "instructor" ? "/studio" : "/home") : "/"} aria-label="ClassProject Open home">
+          <Link href={signedIn ? HOME_FOR[role] : "/"} aria-label="ClassProject Open home">
             <Logo />
           </Link>
           {signedIn && (
             <nav className="hidden items-center gap-1 md:flex" aria-label="Main">
               {nav.map((n) => (
-                <Link key={n.href} href={n.href} aria-current={pathname.startsWith(n.href) ? "page" : undefined} className={cn("relative rounded-lg px-2.5 py-1.5 text-sm transition-colors hover:bg-muted", pathname.startsWith(n.href) && "bg-accent font-medium text-accent-foreground")}>
+                <Link key={n.href} href={n.href} aria-current={current === n.href ? "page" : undefined} className={cn("relative rounded-lg px-2.5 py-1.5 text-sm transition-colors hover:bg-muted", current === n.href && "bg-accent font-medium text-accent-foreground")}>
                   {n.label}
                   {n.href === "/review" && due > 0 && <span className="ml-1 rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground">{due}</span>}
                 </Link>
@@ -86,25 +114,34 @@ export function AppShell({ children, requireAuth }: { children: React.ReactNode;
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger render={<Button variant="ghost" size="sm" className="gap-2" aria-label="Account menu" />}>
-                    <span className="grid size-6 place-items-center rounded-full bg-primary/15 text-xs font-semibold text-primary">{s.profile!.name[0]}</span>
-                    <span className="hidden sm:inline">{s.profile!.name.replace(/^(Dr|Mr|Mrs|Ms|Prof)\.\s+/, "").split(" ")[0]}</span>
+                    <span className="grid size-6 place-items-center rounded-full bg-primary/15 text-xs font-semibold text-primary">{firstName(s.profile!.name)[0]}</span>
+                    <span className="hidden sm:inline">{firstName(s.profile!.name)}</span>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuGroup>
                       <DropdownMenuLabel>{s.profile!.name}</DropdownMenuLabel>
                     </DropdownMenuGroup>
-                    <DropdownMenuItem onClick={() => router.push("/credentials")}>
-                      <BadgeCheck /> Credentials
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => router.push(`/p/${s.profile!.handle}`)}>
-                      <UserRound /> Public portfolio
-                    </DropdownMenuItem>
+                    {role === "learner" && (
+                      <>
+                        <DropdownMenuItem onClick={() => router.push("/credentials")}>
+                          <BadgeCheck /> Credentials
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => router.push(`/p/${s.profile!.handle}`)}>
+                          <UserRound /> Public portfolio
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                    {role === "instructor" && (
+                      <DropdownMenuItem onClick={() => router.push(`/instructors/${instructorSlug(s.profile!.name)}`)}>
+                        <UserRound /> Public profile
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem onClick={() => router.push("/settings")}>
                       <Settings /> Privacy & settings
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => router.push("/sign-in")}>
-                      <Users /> Switch demo learner
+                      <Users /> Switch demo account
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => (signOut(), router.push("/"))}>
                       <LogOut /> Sign out
@@ -127,7 +164,7 @@ export function AppShell({ children, requireAuth }: { children: React.ReactNode;
         {signedIn && (
           <nav className="flex gap-1 overflow-x-auto border-t px-3 py-1.5 md:hidden" aria-label="Main (mobile)">
             {nav.map((n) => (
-              <Link key={n.href} href={n.href} className={cn("shrink-0 rounded-lg px-2.5 py-1 text-sm", pathname.startsWith(n.href) ? "bg-accent font-medium text-accent-foreground" : "text-muted-foreground")}>
+              <Link key={n.href} href={n.href} className={cn("shrink-0 rounded-lg px-2.5 py-1 text-sm", current === n.href ? "bg-accent font-medium text-accent-foreground" : "text-muted-foreground")}>
                 {n.label}
                 {n.href === "/review" && due > 0 && ` (${due})`}
               </Link>

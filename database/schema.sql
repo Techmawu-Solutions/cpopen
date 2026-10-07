@@ -484,6 +484,7 @@ CREATE TABLE instructor_profiles (
   expertise        JSON NULL,
   website          VARCHAR(255) NULL,
   verification     ENUM('unverified','pending','verified','rejected') NOT NULL DEFAULT 'unverified',
+  verification_note VARCHAR(255) NULL,                       -- the reason shown to the applicant when rejected
   verified_at      DATETIME NULL,
   verified_by      BIGINT UNSIGNED NULL,
   FOREIGN KEY (user_id)     REFERENCES users (id) ON DELETE CASCADE,
@@ -1728,6 +1729,10 @@ CREATE TABLE help_requests (
   ai_interaction_id BIGINT UNSIGNED NULL,
   assigned_to   BIGINT UNSIGNED NULL,
   status        ENUM('open','in_progress','resolved') NOT NULL DEFAULT 'open',
+  -- The person's reply, shown to the learner in the lesson's tutor panel.
+  response      TEXT NULL,
+  responded_by  BIGINT UNSIGNED NULL,
+  responded_at  DATETIME NULL,
   created_at    DATETIME NOT NULL,
   resolved_at   DATETIME NULL,
   KEY ix_help_requests_status (tenant_id, status, created_at),
@@ -1735,7 +1740,8 @@ CREATE TABLE help_requests (
   FOREIGN KEY (user_id)     REFERENCES users (id)      ON DELETE CASCADE,
   FOREIGN KEY (course_id)   REFERENCES courses (id)    ON DELETE SET NULL,
   FOREIGN KEY (activity_id) REFERENCES activities (id) ON DELETE SET NULL,
-  FOREIGN KEY (assigned_to) REFERENCES users (id)      ON DELETE SET NULL
+  FOREIGN KEY (assigned_to) REFERENCES users (id)      ON DELETE SET NULL,
+  FOREIGN KEY (responded_by) REFERENCES users (id)     ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE moderation_reports (

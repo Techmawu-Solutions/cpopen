@@ -17,9 +17,9 @@ This section exists so that anyone (a teammate, or a new AI chat) can pick up th
 | Area | State | Where |
 |---|---|---|
 | Product & architecture spec (the brief's 25 deliverables) | **Draft v1 written — awaiting validation** | this file |
-| Database schema | **Draft v1 — 146 tables, 295 foreign keys; loads cleanly on MySQL 8.4 and MariaDB 10.11** | `database/schema.sql` |
+| Database schema | **Draft v1 — 146 tables, 296 foreign keys; loads cleanly on MySQL 8.4 and MariaDB 10.11** | `database/schema.sql` |
 | ClassProject → Open recommendation link | **Prototype built in ClassProject** (mock Open catalogue, subject-based recommendations, student interests) | ClassProject spec section 49.2; cp repo `lib/mooc.ts` |
-| Clickable prototype (P0) | **Built**: Next.js on mock data, port 3001. 4 personas; onboarding with diagnostic; Today; path and planner; skill map; lesson player with tutor; spaced review; project with peer review; credentials with verification; portfolio; studio; the real signed partner API; interface in English, French, Portuguese and Spanish | `prototype/` (see section 21.1) |
+| Clickable prototype (P0) | **Built**: Next.js on mock data, port 3001. 8 demo accounts (3 learners, plus instructor, content reviewer, mentor, organisation admin and platform super admin, each with their portal); onboarding with diagnostic; Today; path and planner; skill map; lesson player with tutor; spaced review; project with peer review; credentials with verification; portfolio; instructor studio (courses, uploads, publish workflow, analytics) and public instructor profiles; review queue; mentoring; organisation academy; platform administration; the real signed partner API; interface in English, French, Portuguese and Spanish | `prototype/` (see section 21.1) |
 | Open production code (Laravel API, production web) | **Not started**, on purpose. The brief says: *"Do not start implementation until the architecture and product requirements have been validated."* The prototype is how we validate them. | none yet |
 
 **Next step:** the product owner:
@@ -335,7 +335,7 @@ Requirement IDs (`FR-<area>-<n>`) are stable and referenced by the backlog (Sect
 | FR-AI-3 | **Grounded answers** from course content, approved references, instructor resources and institutional materials (RAG), with **citations** to the exact lesson/page/timestamp. Responses are labelled **Course content**, **AI explanation** or **External knowledge**. No citation is ever fabricated — if nothing supports an answer the tutor says so | P2 |
 | FR-AI-4 | **Misconception detection** from wrong-answer patterns → targeted remediation activity | P2 |
 | FR-AI-5 | Generates personalised practice questions, revision sessions and flashcards from course-approved sources (learner-facing generated items are marked "AI-generated practice" and never count for credentials) | P2 |
-| FR-AI-6 | **Escalation**: repeated confusion, frustration signals, safeguarding keywords, or "talk to a human" → routes to mentor/instructor queue with context | P2 |
+| FR-AI-6 | **Escalation**: repeated confusion, frustration signals, safeguarding keywords, or "talk to a human" → routes to mentor/instructor queue with context. Safeguarding comes first in the queue. The mentor's reply is stored on the request (`help_requests.response`) and shown to the learner in the lesson's tutor panel | P2 |
 | FR-AI-7 | Learners can turn personalisation and AI features off (Section 6.20); the platform stays fully usable without AI | P2 |
 | FR-AI-8 | Under-18 tutoring runs a stricter safety profile (no off-topic chat, safeguarding escalation to institution/guardian where configured) | P2 |
 
@@ -469,6 +469,8 @@ Requirement IDs (`FR-<area>-<n>`) are stable and referenced by the backlog (Sect
 | FR-ST-2 | Generates: course structure, lesson plans, objectives, quizzes, assignments, case studies, discussion questions, flashcards, practice exercises, rubrics, revision materials, accessibility metadata (alt text, transcripts) | P2 |
 | FR-ST-3 | **Every generated artefact is a draft** that a human must review and approve; provenance ("AI-drafted, approved by X on date") stored | P2 |
 | FR-ST-4 | Objective → skill mapping suggestions against the tenant's competency framework | P2 |
+| FR-ST-6 | **Publishing a version from the Studio:** the instructor sees their courses with live version, open flags and drafts to review; a new version can be sent for review only when the pre-publish gates pass (FR-QA-2: coverage, lessons written, captions on every video, no open broken-link or accessibility flag) and something has changed (approved AI drafts, fixed flags, listed as the change notes); the instructor marks it *safe to migrate* (minor bump, enrolled learners move) or not (major bump, they stay); a content reviewer approves it or asks for changes (FR-MK-3), and the course page then shows the new version (FR-CA-4) | P1 (built in the P0 prototype) |
+| FR-ST-7 | **Course analytics in the Studio** (FR-QA-4, journey section 4.4): learners, mastery rate and completion; learners still going per lesson with the biggest drop-off called out; per-item share correct and discrimination, with items below 0.15 marked and one click to send them to the quality-flag queue | P2 (built in the P0 prototype, on simulated data) |
 | FR-ST-5 | **In-video question editor:** place items from the course's item bank at moments in a lesson video or its recorded lecture, each required or optional; problems (a time past the end, a question used twice) block publishing; a draft is previewed in the lesson and learners only get the published version (FR-VP-4) | P2 (built in the P0 prototype) |
 
 ## 6.23 Marketplace, publishing and revenue (brief section 22)
@@ -505,6 +507,13 @@ Requirement IDs (`FR-<area>-<n>`) are stable and referenced by the backlog (Sect
 ## 6.26 Administration (brief section 48)
 
 Dashboards per role as listed in section 5.3. Super admin additionally sees **AI usage and cost** per tenant/feature, **security** events, and **moderation** queues.
+
+| ID | Requirement | Phase |
+|---|---|---|
+| FR-AM-1 | **Tenants:** list with kind, learners, courses and data region; suspend and restore (members can't sign in while suspended; nothing is deleted) | P1 (built in the P0 prototype) |
+| FR-AM-2 | **AI kill switch and budget:** each AI feature can be paused platform-wide (`ai_model_configs.active`); learners are told and can still ask a person. A monthly AI budget with spend shown against it (`tenants.ai_monthly_budget_usd`) | P1 (built in the P0 prototype; pausing the tutor is live) |
+| FR-AM-3 | **Moderation overview:** versions waiting for review, open quality flags, open safeguarding escalations, learner questions waiting for a mentor, reported posts | P1 (built in the P0 prototype) |
+| FR-AM-4 | **Instructor verification** (FR-MK-2) with the applicant's checks; rejecting needs a reason, which is shown to the applicant (`instructor_profiles.verification_note`) | P1 (built in the P0 prototype) |
 
 ## 6.27 ClassProject partner link
 
@@ -1125,13 +1134,30 @@ Tokens (colour, type, spacing, radius, motion) shared across web and native; com
 - **Credentials:** issued automatically once their criteria are met. The public verification page includes the Open Badges 3.0-shaped JSON.
 - **The portfolio:** public or private, and never public for under-18s.
 - **Settings:** privacy and AI switches, data export and account deletion.
-- **The instructor studio:** the coverage gate, AI drafts that need approval, quality flags, and **in-video questions**:
+- **The instructor studio** (learners who open it are told it's for instructors):
+  - **Your courses:** the instructor's own courses with live version, learners, mastery, drafts to review and open flags; the other fully written courses are reachable as "demo access" so the in-video question demo works on any of them;
+  - **the coverage gate**; for an outline-only course the placeholder lessons block publishing;
+  - **AI drafts** that need approval, each recording who approved or rejected it and when;
+  - **Publish a new version** (FR-ST-6): the pre-publish checks, the change list, *safe to migrate*, **Send for review**, then a simulated reviewer (**Simulate approval** or **changes requested**, or **Withdraw**) and a version history. An approved version shows on the course page;
+  - **Learners and analytics** (FR-ST-7): a drop-off funnel by lesson and item statistics, with **Flag for review** on a weak item;
+  - **quality flags**, labelled by kind and source; open broken-link and accessibility flags block publishing;
+  - **in-video questions**:
   - pick a video (the lesson video or its recorded lecture);
   - add questions from the course's item bank at a time;
   - mark each required or optional, change its time, or remove it;
   - problems are shown (a time after the end of the video, the same question twice);
   - **Save draft**, **Preview draft in the lesson**, then **Publish**. Learners get the published version; the draft preview records nothing;
-  - published questions belong to the course, so they stay when switching persona.
+  - published questions and approved course versions belong to the course, so they stay when switching persona.
+- **Instructor profiles:** `/instructors/:slug`, linked from "taught by" on each course page: providers, courses, learners and the share reaching mastery (no star ratings).
+- **Adding content** (`/studio/upload`, section 13.1, FR-ST-1, FR-CA-6):
+  - a lesson video (a real file picker or a sample): the pipeline runs upload → conversion to audio-only and 144p–1080p → automatic captions → **the instructor checks the captions** → ready. A video whose captions aren't checked blocks publishing; a ready one goes into the next version's change list;
+  - source documents: the AI Studio drafts a lesson outline and a practice question, which wait in the studio's AI drafts;
+  - a QTI / Common Cartridge package, which arrives as one draft of imported questions. SCORM is phase 2.
+- **Staff portals**, one per demo account (section 5.3). Course versions, uploads, drafts, flags, questions to mentors, the academy and admin decisions are **shared by every account in the browser**, so each role sees what the others did. **Reset the demo** on the sign-in page starts again.
+  - **Content reviewer** (`/reviewer`, Akua Danso): versions waiting, with what changed and the automatic checks; a five-criterion rubric (FR-QA-1) to approve, or a note to send it back; decisions; open flags across courses.
+  - **Mentor** (`/mentor`, Esi Ofori): questions from the tutor's "Ask a person" and its safeguarding escalations (safeguarding first, under-18 rules shown); the reply appears in the learner's lesson. Learners with progress and an at-risk mark after 7 quiet days, with a nudge; sessions to book.
+  - **Organisation admin** (`/org`, Selase Agbenyo, fictional Volta Logistics): seats and activity; the skill coverage heat-map by team (FR-OR-4); paths and courses assigned to SSO-backed teams with due dates (FR-OR-3); people and invitations; CASE framework import (FR-OR-2); academy name, `<name>.open.classproject.com` address, brand colour and single sign-on (FR-OR-1).
+  - **Platform super admin** (`/admin`, Yaw Asare): platform figures; tenants with suspend/restore (FR-AM-1); instructor verification (FR-AM-4); the moderation overview (FR-AM-3); AI usage and cost by feature with a budget and per-feature pause (FR-AM-2: pausing the tutor switches it off in every lesson); the ClassProject partner's status; system health; manual payouts (FR-MK-4). The super admin can also open the review queue.
 - **Offline and data saver:** simulated.
 - **The partner API:** `GET /api/v1/partner/recommendations` really runs, with the HMAC signature check, the refusal of learner identifiers, and the section 25.4 rules.
 
@@ -1356,3 +1382,5 @@ Headers: `X-Partner-Key: <client id>`, `X-Partner-Timestamp: <unix>`, `X-Partner
 | Oct 2026 | Lesson player plays recorded YouTube lectures in-app (`Activity.lecture`, privacy-enhanced domain, referrer kept so YouTube allows playback) | 21.1, 6.6 |
 | Oct 2026 | In-video questions (FR-VP-4): several per video, required or optional, markers on the seek bar and no seeking past an unanswered required question; recorded YouTube lectures get checkpoint questions through the YouTube player API, recorded as `video_question` evidence. Schema: `activity_lectures`; `video_questions` can sit on a lecture and gains `position` | 6.6, 21.1 |
 | Oct 2026 | Studio: in-video question editor, FR-ST-5 (place items from the item bank at moments in a lesson video or recorded lecture, required/optional, draft, preview, publish). Schema: none, since drafts and published questions are `video_questions` rows on a draft or published `course_versions` row | 6.6, 6.22, 21.1 |
+| Oct 2026 | Studio completed: the instructor's course list, version publishing through review (FR-ST-6: pre-publish gates incl. placeholder lessons and blocking flags, change notes, safe-to-migrate, reviewer decision, version history, course page shows the live version), course analytics (FR-ST-7), labelled drafts and flags with provenance, learners kept out of `/studio`; public instructor profile at `/instructors/:slug`. Schema: none, since this maps to `course_versions` (`change_notes`, `safe_to_migrate`, `status`), `course_reviews`, `ai_drafts` (`reviewed_by`, `reviewed_at`), `quality_flags` (`resolved_at`), `item_statistics` and `instructor_profiles` + `users.handle` | 0.1, 6.22, 21.1 |
+| Oct 2026 | Staff portals: demo accounts for a content reviewer (review queue with rubric scores), a mentor (help-request queue with safeguarding first, replies shown in the lesson, at-risk learners, sessions), an organisation admin (private academy: heat-map, assignments, invitations, frameworks, branding, SSO) and a platform super admin (tenants, instructor verification, moderation, AI usage with budget and per-feature pause, partner, health, payouts); `/studio/upload` for lesson videos with caption review, source documents and QTI packages. FR-AM-1..4 added; FR-AI-6 now stores the reply. Schema: `help_requests.response`, `responded_by`, `responded_at`; `instructor_profiles.verification_note` (296 foreign keys) | 0.1, 6.8, 6.26, 21.1 |

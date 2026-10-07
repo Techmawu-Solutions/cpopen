@@ -14,6 +14,7 @@ import { credentialById, skillName } from "@/lib/data/graph";
 import { courseProgress, criterionLabel, enrol } from "@/lib/learning";
 import { SUBJECT_NAMES } from "@/lib/partner";
 import { setOpen, useOpen } from "@/lib/store";
+import { instructorSlug, liveVersion } from "@/lib/studio";
 import type { ActivityKind } from "@/lib/types";
 
 const ICON: Record<ActivityKind, typeof PlayCircle> = { video: PlayCircle, reading: BookOpen, practice: PenLine, project: FolderKanban, mastery_check: ClipboardCheck };
@@ -53,6 +54,7 @@ function Body() {
     );
 
   const signedIn = !!s.profile;
+  const live = liveVersion(s, course);
   const enrolled = !!s.enrollments[course.slug];
   const progress = courseProgress(course, s);
   const first = activitiesOf(course)[0]!;
@@ -75,7 +77,10 @@ function Body() {
       <header className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <div>
           <p className="text-sm text-muted-foreground">
-            {course.provider} · taught by {course.instructor}
+            {course.provider} · taught by{" "}
+            <Link href={`/instructors/${instructorSlug(course.instructor)}`} className="hover:text-foreground hover:underline">
+              {course.instructor}
+            </Link>
           </p>
           <h1 className="mt-1 text-4xl font-semibold">{course.title}</h1>
           <p className="mt-2 text-lg text-muted-foreground">{course.subtitle}</p>
@@ -206,7 +211,7 @@ function Body() {
         </Fact>
         <Fact icon={RefreshCw} title="Up to date?">
           <p>
-            Version {course.version} · updated {new Date(course.lastUpdated).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+            Version {live.version} · updated {new Date(live.updated).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
           </p>
           <p className="mt-1 flex items-center gap-1.5">
             <Users className="size-3.5" /> {course.learners.toLocaleString()} learners · {course.masteryRate}% reach mastery

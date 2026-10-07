@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { courseOfActivity } from "@/lib/data/courses";
-import { setOpen, uid, useOpen } from "@/lib/store";
+import { setOpen, uid, useOpen, type HelpRequest } from "@/lib/store";
 import { tutorReply, type TutorAction } from "@/lib/tutor";
 import type { TutorMessage } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -27,8 +27,17 @@ export function Tutor({ activityId }: { activityId: string }) {
   const [q, setQ] = useState("");
   const course = courseOfActivity(activityId);
   const teen = profile?.ageBand === "teen";
+  const paused = useOpen((s) => s.admin?.aiPaused ?? []).includes("tutor");
+  const asked = useOpen((s) => s.helpRequests).filter((h) => h.activityId === activityId && h.from === profile?.name);
 
   if (!profile) return <p className="text-sm text-muted-foreground">Sign in to use the tutor.</p>;
+  if (paused)
+    return (
+      <div className="space-y-3">
+        <p className="text-sm text-muted-foreground">The AI tutor is paused across the platform for the moment. You can still ask a person.</p>
+        <MentorRequests asked={asked} onAsk={() => ask("I need help with this lesson.", "learner")} />
+      </div>
+    );
   if (!profile.aiTutor)
     return (
       <p className="text-sm text-muted-foreground">
@@ -36,20 +45,26 @@ export function Tutor({ activityId }: { activityId: string }) {
       </p>
     );
 
+  /** A question for a person (FR-AI-6); the mentor sees the learner's name and age band. */
+  function request(question: string, source: HelpRequest["source"]): HelpRequest {
+    return { id: uid("help"), activityId, question, at: new Date().toISOString(), status: "open", from: profile!.name, teen, source };
+  }
+
+  function ask(question: string, source: HelpRequest["source"]) {
+    setOpen((s) => ({ helpRequests: [request(question, source), ...s.helpRequests] }));
+    toast.success("Sent to a mentor with this lesson's context. You'll get a reply within a day.");
+  }
+
   const push = (learner: string, input: { action?: TutorAction; question?: string }) => {
     const { reply, escalate } = tutorReply(activityId, input, messages, teen);
     setOpen((s) => ({
       tutor: { ...s.tutor, [activityId]: [...(s.tutor[activityId] ?? []), { role: "learner", text: learner }, reply] },
-      helpRequests: escalate ? [{ id: uid("help"), activityId, question: escalate, at: new Date().toISOString(), status: "open" }, ...s.helpRequests] : s.helpRequests,
+      helpRequests: escalate ? [request(escalate, "safeguarding"), ...s.helpRequests] : s.helpRequests,
     }));
     if (escalate) toast("A mentor has been notified");
   };
 
-  const askMentor = () => {
-    const last = [...messages].reverse().find((m) => m.role === "learner")?.text ?? "I need help with this lesson.";
-    setOpen((s) => ({ helpRequests: [{ id: uid("help"), activityId, question: last, at: new Date().toISOString(), status: "open" }, ...s.helpRequests] }));
-    toast.success("Sent to a mentor with this lesson's context. You'll get a reply within a day.");
-  };
+  const askMentor = () => ask([...messages].reverse().find((m) => m.role === "learner")?.text ?? "I need help with this lesson.", "learner");
 
   return (
     <div className="flex flex-col gap-3">
@@ -105,10 +120,26 @@ export function Tutor({ activityId }: { activityId: string }) {
           <Send />
         </Button>
       </form>
-      <Button variant="ghost" size="sm" className="self-start" onClick={askMentor}>
+      <MentorRequests asked={asked} onAsk={askMentor} />
+      {teen && <p className="text-xs text-muted-foreground">Student safety mode: the tutor sticks to your lessons, and anything worrying goes to a trained person.</p>}
+    </div>
+  );
+}
+
+/** "Ask a person", and the learner's questions to a mentor about this activity with their answers. */
+function MentorRequests({ asked, onAsk }: { asked: HelpRequest[]; onAsk: () => void }) {
+  return (
+    <div className="space-y-2">
+      <Button variant="ghost" size="sm" className="self-start" onClick={onAsk}>
         <LifeBuoy /> Ask a person (mentor)
       </Button>
-      {teen && <p className="text-xs text-muted-foreground">Student safety mode: the tutor sticks to your lessons, and anything worrying goes to a trained person.</p>}
+      {asked.map((h) => (
+        <div key={h.id} className="rounded-xl border bg-muted/40 p-2.5 text-sm">
+          <p className="text-xs text-muted-foreground">{h.status === "answered" ? `Answered by ${h.answeredBy}` : "Waiting for a mentor"}</p>
+          <p className="mt-0.5 italic">“{h.question}”</p>
+          {h.answer && <p className="mt-1.5 whitespace-pre-line">{h.answer}</p>}
+        </div>
+      ))}
     </div>
   );
 }
