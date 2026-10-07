@@ -19,12 +19,12 @@ This section exists so that anyone (a teammate, or a new AI chat) can pick up th
 | Product & architecture spec (the brief's 25 deliverables) | **Draft v1 written — awaiting validation** | this file |
 | Database schema | **Draft v1 — 146 tables, 296 foreign keys; loads cleanly on MySQL 8.4 and MariaDB 10.11** | `database/schema.sql` |
 | ClassProject → Open recommendation link | **Prototype built in ClassProject** (mock Open catalogue, subject-based recommendations, student interests) | ClassProject spec section 49.2; cp repo `lib/mooc.ts` |
-| Clickable prototype (P0) | **Built**: Next.js on mock data, port 3001. 8 demo accounts (3 learners, plus instructor, content reviewer, mentor, organisation admin and platform super admin, each with their portal); onboarding with diagnostic; Today; path and planner; skill map; lesson player with tutor; spaced review; project with peer review; credentials with verification; portfolio; instructor studio (courses, uploads, publish workflow, analytics) and public instructor profiles; review queue; mentoring; organisation academy; platform administration; the real signed partner API; interface in English, French, Portuguese and Spanish | `prototype/` (see section 21.1) |
+| Clickable prototype (P0) | **Built**: Next.js on mock data, port 3001. 8 demo accounts (3 learners, plus instructor, content reviewer, mentor, organisation admin and platform super admin, each with their portal); onboarding with diagnostic; Today; path and planner; skill map; lesson player with tutor; spaced review; project with peer review; credentials with verification; portfolio; instructor studio (courses, uploads, publish workflow, analytics) and public instructor profiles; review queue; mentoring; organisation academy; platform administration; the real signed partner API; interface in English, French, Portuguese and Spanish | the repo root: `app/`, `components/`, `lib/` (see section 21.1) |
 | Open production code (Laravel API, production web) | **Not started**, on purpose. The brief says: *"Do not start implementation until the architecture and product requirements have been validated."* The prototype is how we validate them. | none yet |
 
 **Next step:** the product owner:
 
-1. clicks through the prototype, following the demo script in `prototype/README.md`;
+1. clicks through the prototype, following the demo script in `README.md`;
 2. reviews this spec, especially section 21 (MVP scope) and section 26 (open questions);
 3. records decisions in section 0.3.
 
@@ -1111,7 +1111,7 @@ Tokens (colour, type, spacing, radius, motion) shared across web and native; com
 
 ## 21.1 Clickable prototype (P0)
 
-`prototype/` is a Next.js app on mock data, like the ClassProject prototype. It exists so the product can be tried before it's built. Run it with `npm run dev` on port 3001. Its README has the demo script and a map from each screen to the requirements above.
+The prototype is a Next.js app on mock data at the root of the repo, like the ClassProject prototype. It exists so the product can be tried before it's built. Run it with `npm run dev` on port 3001. The README has the demo script and a map from each screen to the requirements above.
 
 **What it shows**
 - **The first run:** the goal prompt (free text or chips), then an under-18 guardian-consent step, then a diagnostic spread across the goal's skills, then a personal path that skips what the learner already knows.
@@ -1162,14 +1162,14 @@ Tokens (colour, type, spacing, radius, motion) shared across web and native; com
 - **The partner API:** `GET /api/v1/partner/recommendations` really runs, with the HMAC signature check, the refusal of learner identifiers, and the section 25.4 rules.
 
 **Interface language:** the header has a language switch for English, French, Portuguese and Spanish (section 7.5).
-- The dictionaries are `prototype/lib/i18n/dict/{fr,pt,es}.json`, keyed by the English text. Sentences built from values use `{0}` slots.
-- A runtime translator (`prototype/lib/i18n/dom-translator.ts`) swaps the rendered English and localises dates with `Intl`.
+- The dictionaries are `lib/i18n/dict/{fr,pt,es}.json`, keyed by the English text. Sentences built from values use `{0}` slots.
+- A runtime translator (`lib/i18n/dom-translator.ts`) swaps the rendered English and localises dates with `Intl`.
 - The demo catalogue is translated too, standing in for translated course versions:
   - course and skill titles, descriptions, careers, projects and rubrics;
   - all 60 practice items with their hints and explanations;
   - video transcripts and slides;
   - the lesson readings, each translated as a whole document before it is rendered (`lib/i18n/use-translated.ts`).
-- `node ../scripts/i18n-extract.mjs . --missing`, run from `prototype/`, lists interface strings without a translation.
+- `node scripts/i18n-extract.mjs . --missing` lists interface strings without a translation.
 
 **Course covers:** generated thumbnails on every course card and course page (FR-TR-3), served from `/thumbnails/<slug>.svg`.
 
@@ -1384,3 +1384,4 @@ Headers: `X-Partner-Key: <client id>`, `X-Partner-Timestamp: <unix>`, `X-Partner
 | Oct 2026 | Studio: in-video question editor, FR-ST-5 (place items from the item bank at moments in a lesson video or recorded lecture, required/optional, draft, preview, publish). Schema: none, since drafts and published questions are `video_questions` rows on a draft or published `course_versions` row | 6.6, 6.22, 21.1 |
 | Oct 2026 | Studio completed: the instructor's course list, version publishing through review (FR-ST-6: pre-publish gates incl. placeholder lessons and blocking flags, change notes, safe-to-migrate, reviewer decision, version history, course page shows the live version), course analytics (FR-ST-7), labelled drafts and flags with provenance, learners kept out of `/studio`; public instructor profile at `/instructors/:slug`. Schema: none, since this maps to `course_versions` (`change_notes`, `safe_to_migrate`, `status`), `course_reviews`, `ai_drafts` (`reviewed_by`, `reviewed_at`), `quality_flags` (`resolved_at`), `item_statistics` and `instructor_profiles` + `users.handle` | 0.1, 6.22, 21.1 |
 | Oct 2026 | Staff portals: demo accounts for a content reviewer (review queue with rubric scores), a mentor (help-request queue with safeguarding first, replies shown in the lesson, at-risk learners, sessions), an organisation admin (private academy: heat-map, assignments, invitations, frameworks, branding, SSO) and a platform super admin (tenants, instructor verification, moderation, AI usage with budget and per-feature pause, partner, health, payouts); `/studio/upload` for lesson videos with caption review, source documents and QTI packages. FR-AM-1..4 added; FR-AI-6 now stores the reply. Schema: `help_requests.response`, `responded_by`, `responded_at`; `instructor_profiles.verification_note` (296 foreign keys) | 0.1, 6.8, 6.26, 21.1 |
+| Oct 2026 | The prototype moved from `prototype/` to the root of the repo, like ClassProject's, so Vercel builds it with no Root Directory setting. Its README merged into the root README. Nothing about the product changed | 0.1, 21.1 |
