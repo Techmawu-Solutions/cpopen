@@ -11,15 +11,16 @@ It is a **separate platform** from ClassProject, the school LMS in the [cp repos
 | [`ClassProject Open — Product Specification.md`](ClassProject%20Open%20—%20Product%20Specification.md) | **The source of truth.** The product requirements and architecture: all 25 deliverables the brief asks for, a decision log, the MVP, the roadmap, the backlog, acceptance criteria and the ClassProject integration. **Read section 0 first.** |
 | [`database/schema.sql`](database/schema.sql) | Open's own MySQL 8 schema (146 tables), verified by loading it |
 | [`database/README.md`](database/README.md) | How the schema is organised, its conventions, the ClassProject link tables, and what lives outside MySQL |
-| [`prototype/`](prototype/README.md) | **The clickable prototype.** Run `npm install && npm run dev` there, then open http://localhost:3001. Its README has the demo accounts, a 10-minute demo script, and a map from screens to requirements |
+| [`prototype/`](prototype/README.md) | **The clickable prototype.** Run `npm install && npm run dev` there, then open http://localhost:3001. Its README has the demo accounts, a 10-minute demo script, a walk-through across the staff roles, and a map from screens to requirements |
 | [`Master Prompt — Next-Generation Global MOOC Platform.md`](Master%20Prompt%20—%20Next-Generation%20Global%20MOOC%20Platform.md) | The original brief this work answers (kept unchanged apart from a pointer at the top) |
 
-## Where things stand (Sep 2026)
+## Where things stand (Oct 2026)
 
 - ✅ The specification v1 is written. It **needs product-owner validation**: see spec section 26 for the open questions and section 21 for the MVP scope.
 - ✅ The database schema v1 is written and loads cleanly.
 - ✅ The ClassProject side of the link is built as a prototype: ClassProject spec section 49.2; code in the cp repo's `lib/mooc.ts` and `components/student/mooc-recommendations.tsx`. It uses a mock Open catalogue until Open's partner API exists.
-- ✅ The **clickable prototype** (phase P0) is built in `prototype/`. It is a Next.js app on mock data with four demo personas, and its partner API really runs. In development, ClassProject's recommendation links open it.
+- ✅ The **clickable prototype** (phase P0) is built in `prototype/`. It is a Next.js app on mock data with eight demo accounts: three learners, plus an instructor, a content reviewer, a mentor, an organisation admin and a platform super admin, each with their own portal. Its partner API really runs. In development, ClassProject's recommendation links open it.
+- ✅ **In-video questions** (spec FR-VP-4): several per video, required or optional, on the lesson video and on recorded YouTube lectures, with no seeking past an unanswered required one. Instructors edit them in the **Studio** (FR-ST-5): draft, preview in the lesson, publish.
 - ⏸ **No production code yet, on purpose.** The prototype is how the product owner validates the spec before Phase 1.
 
 ## How to continue in a new chat
